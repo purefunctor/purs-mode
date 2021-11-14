@@ -67,7 +67,7 @@
   :type 'integer
   :group 'purs-indentation)
 
-(defcustom purs-indentation-where-post-offset 2
+(defcustom purs-indentation-where-post-offset 0
   "Extra indentation after the keyword \"where\"."
   :type 'integer
   :group 'purs-indentation)
