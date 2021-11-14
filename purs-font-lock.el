@@ -25,15 +25,17 @@
 ;;; Code:
 
 (defconst purs-keywords-regexp
-  (regexp-opt
-   '("if" "then" "else" "do"
-     "ado" "in" "module" "as"
-     "import" "foreign" "data"
-     "kind" "type" "infix"
-     "infixr" "infixl" "where"
-     "class" "instance" "forall"
-     "let" "derive" "newtype"
-     "case" "of") 'words)
+  (concat (regexp-opt
+           '("if" "then" "else" "do"
+             "ado" "in" "module" "as"
+             "import" "foreign" "data"
+             "kind" "type" "infix"
+             "infixr" "infixl" "where"
+             "class" "instance" "forall"
+             "let" "derive" "newtype"
+             "case" "of")
+           'words)
+          "\\|∀")
   "Regexp for matching keywords.")
 
 (defconst purs-value-decl-regexp
