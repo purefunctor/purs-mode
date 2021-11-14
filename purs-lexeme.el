@@ -16,6 +16,12 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+;;
+;; Notice:
+;;
+;; This file is forked from haskell-lexeme.el that lives in
+;; https://github.com/haskell/haskell-mode. Haskell-specific code e.g.
+;; is either removed for simplicity or renamed to PureScript.
 
 ;;; Code:
 
@@ -35,7 +41,7 @@
   (dolist (key (string-to-list "!#$%&*+./<=>?@^|~\\-:"))
     (modify-category-entry key ?P)))
 
-(defconst haskell-lexeme-modid
+(defconst purs-lexeme-modid
   "[[:upper:]][[:alnum:]'_]*"
   "Regexp matching a valid Haskell module identifier.
 
@@ -45,7 +51,7 @@ UppercaseLetter, LowercaseLetter, OtherLetter, TitlecaseLetter,
 ModifierLetter, DecimalNumber, OtherNumber, backslash or
 underscore.")
 
-(defconst haskell-lexeme-id
+(defconst purs-lexeme-id
   "[[:alpha:]_][[:alnum:]'_]*"
   "Regexp matching a valid Haskell identifier.
 
@@ -53,7 +59,7 @@ GHC accepts a string starting with any alphabetic character or
 underscore followed by any alphanumeric character or underscore
 or apostrophe.")
 
-(defconst haskell-lexeme-sym
+(defconst purs-lexeme-sym
   "\\cP+"
   "Regexp matching a valid Haskell variable or constructor symbol.
 
@@ -61,34 +67,34 @@ GHC accepts a string of chars from the set
 [:!#$%&*+./<=>?@^|~\\-] or Unicode category Symbol for chars with
 codes larger than 128 only.")
 
-(defconst haskell-lexeme-idsym-first-char
+(defconst purs-lexeme-idsym-first-char
   "\\(?:[[:alpha:]_]\\|\\cP\\)"
   "Regexp matching first character of a qualified or unqualified
 identifier or symbol.
 
 Useful for `re-search-forward'.")
 
-(defconst haskell-lexeme-modid-opt-prefix
-  (concat "\\(?:" haskell-lexeme-modid "\\.\\)*")
+(defconst purs-lexeme-modid-opt-prefix
+  (concat "\\(?:" purs-lexeme-modid "\\.\\)*")
   "Regexp matching a valid Haskell module prefix, potentially empty.
 
 Module path prefix is separated by dots and finishes with a
-dot. For path component syntax see `haskell-lexeme-modid'.")
+dot. For path component syntax see `purs-lexeme-modid'.")
 
-(defconst haskell-lexeme-qid-or-qsym
-  (rx-to-string `(: (regexp ,haskell-lexeme-modid-opt-prefix)
-                    (group (| (regexp ,haskell-lexeme-id) (regexp ,haskell-lexeme-sym)
+(defconst purs-lexeme-qid-or-qsym
+  (rx-to-string `(: (regexp ,purs-lexeme-modid-opt-prefix)
+                    (group (| (regexp ,purs-lexeme-id) (regexp ,purs-lexeme-sym)
                               ))))
   "Regexp matching a valid qualified identifier or symbol.
 
 Note that (match-string 1) returns the unqualified part.")
 
-(defun haskell-lexeme-looking-at-qidsym ()
+(defun purs-lexeme-looking-at-qidsym ()
   "Non-nil when point is just in front of an optionally qualified
 identifier or symbol.
 
 Using this function is more efficient than matching against the
-regexp `haskell-lexeme-qid-or-qsym'.
+regexp `purs-lexeme-qid-or-qsym'.
 
 Returns:
   'qid - if matched a qualified id: 'Data.Map' or 'Map'
@@ -100,10 +106,10 @@ the unqualified part (if any)."
   (let ((begin (point))
         (match-data-old (match-data)))
     (save-excursion
-      (while (looking-at (concat haskell-lexeme-modid "\\."))
+      (while (looking-at (concat purs-lexeme-modid "\\."))
         (goto-char (match-end 0)))
       (cond
-       ((looking-at haskell-lexeme-id)
+       ((looking-at purs-lexeme-id)
         (let ((beg (match-beginning 0))
               (end (match-end 0)))
 
@@ -116,7 +122,7 @@ the unqualified part (if any)."
            (list begin end
                  beg end)))
         'qid)
-       ((looking-at haskell-lexeme-sym)
+       ((looking-at purs-lexeme-sym)
         (set-match-data
           (list begin (match-end 0)
                 (match-beginning 0) (match-end 0)))
@@ -130,7 +136,7 @@ the unqualified part (if any)."
                nil nil))
         'qprefix)))))
 
-(defun haskell-lexeme-looking-at-backtick ()
+(defun purs-lexeme-looking-at-backtick ()
   "Non-nil when point is just in front of an identifier quoted with backticks.
 
 When match is successful, match-data will contain:
@@ -150,7 +156,7 @@ When match is successful, match-data will contain:
         (setq first-backtick-start (match-beginning 0))
         (goto-char (match-end 0))
         (forward-comment (buffer-size))
-        (when (haskell-lexeme-looking-at-qidsym)
+        (when (purs-lexeme-looking-at-qidsym)
           (setq qid-start (match-beginning 0))
           (setq id-start (match-beginning 1))
           (setq id-end (match-end 1))
@@ -173,23 +179,23 @@ When match is successful, match-data will contain:
       (set-match-data match-data-old))
     result))
 
-(defconst haskell-lexeme-qid
+(defconst purs-lexeme-qid
   (rx-to-string `(: (regexp "'*")
-                    (regexp ,haskell-lexeme-modid-opt-prefix)
-                    (group (regexp ,haskell-lexeme-id))))
+                    (regexp ,purs-lexeme-modid-opt-prefix)
+                    (group (regexp ,purs-lexeme-id))))
   "Regexp matching a valid qualified identifier.
 
 Note that (match-string 1) returns the unqualified part.")
 
-(defconst haskell-lexeme-qsym
+(defconst purs-lexeme-qsym
   (rx-to-string `(: (regexp "'*")
-                    (regexp ,haskell-lexeme-modid-opt-prefix)
-                    (group (regexp ,haskell-lexeme-id))))
+                    (regexp ,purs-lexeme-modid-opt-prefix)
+                    (group (regexp ,purs-lexeme-id))))
   "Regexp matching a valid qualified symbol.
 
 Note that (match-string 1) returns the unqualified part.")
 
-(defconst haskell-lexeme-number
+(defconst purs-lexeme-number
   (rx (| (: (regexp "[0-9]+\\.[0-9]+") (opt (regexp "[eE][-+]?[0-9]+")))
          (regexp "[0-9]+[eE][-+]?[0-9]+")
          (regexp "0[xX][0-9a-fA-F]+")
@@ -199,7 +205,7 @@ Note that (match-string 1) returns the unqualified part.")
 
 Note that negative sign char is not part of a number.")
 
-(defconst haskell-lexeme-char-literal-inside
+(defconst purs-lexeme-char-literal-inside
   (rx (| (not (any "\n'\\"))
          (: "\\"
             (| "a" "b" "f" "n" "r" "t" "v" "\\" "\"" "'"
@@ -213,10 +219,10 @@ Note that negative sign char is not part of a number.")
                (: "^" (regexp "[]A-Z@^_\\[]"))))))
   "Regexp matching an inside of a character literal.
 
-Note that `haskell-lexeme-char-literal-inside' matches strictly
+Note that `purs-lexeme-char-literal-inside' matches strictly
 only escape sequences defined in Haskell Report.")
 
-(defconst haskell-lexeme--char-literal-rx
+(defconst purs-lexeme--char-literal-rx
   (rx-to-string `(: (group "'")
                     (| (: (group (regexp "[[:alpha:]_:([]")) (group "'")) ; exactly one char
                        (: (group (| (regexp "\\\\[^\n][^'\n]*") ; allow quote just after first backslash
@@ -224,7 +230,7 @@ only escape sequences defined in Haskell Report.")
                           (| (group "'") "\n" (regexp "\\'"))))))
   "Regexp matching a character literal lookalike.
 
-Note that `haskell-lexeme--char-literal-rx' matches more than
+Note that `purs-lexeme--char-literal-rx' matches more than
 Haskell Report specifies because we want to support also code
 under edit.
 
@@ -237,7 +243,7 @@ Regexp has subgroup expressions:
  (match-text 3) matches the closing quote or an empty string
                 at the end of line or the end buffer.")
 
-(defun haskell-lexeme-looking-at-char-literal ()
+(defun purs-lexeme-looking-at-char-literal ()
   "Non-nil when point is at a char literal lookalike.
 
 Note that this function matches more than Haskell Report
@@ -251,7 +257,7 @@ After successful match:
  (match-text 2) matches the inside of the char literla.
  (match-text 3) matches the closing quote, or a closing
                 newline or is nil when at the end of the buffer."
-  (when (looking-at haskell-lexeme--char-literal-rx)
+  (when (looking-at purs-lexeme--char-literal-rx)
     (set-match-data
      (list (match-beginning 0) (match-end 0)
            (match-beginning 1) (match-end 1)
@@ -259,7 +265,7 @@ After successful match:
            (or (match-beginning 3) (match-beginning 5)) (or (match-end 3) (match-end 5))))
     t))
 
-(defconst haskell-lexeme-string-literal-inside-item
+(defconst purs-lexeme-string-literal-inside-item
   (rx (| (not (any "\n\"\\"))
          (: "\\"
             (| "a" "b" "f" "n" "r" "t" "v" "\\" "\"" "'" "&"
@@ -275,10 +281,10 @@ After successful match:
   "Regexp matching an item that is a single character or a single
 escape sequence inside of a string literal.
 
-Note that `haskell-lexeme-string-literal-inside-item' matches
+Note that `purs-lexeme-string-literal-inside-item' matches
 strictly only escape sequences defined in Haskell Report.")
 
-(defconst haskell-lexeme-string-literal
+(defconst purs-lexeme-string-literal
   (rx (: (group "\"")
          (group (* (| (regexp "\\\\[ \t\n\r\v\f]*\\\\")
                       (regexp "\\\\[ \t\n\r\v\f]+")
@@ -288,7 +294,7 @@ strictly only escape sequences defined in Haskell Report.")
                    ))))
   "Regexp matching a string literal lookalike.
 
-Note that `haskell-lexeme-string-literal' matches more than
+Note that `purs-lexeme-string-literal' matches more than
 Haskell Report specifies because we want to support also code
 under edit.
 
@@ -301,7 +307,7 @@ Regexp has subgroup expressions:
  (match-text 3) matches the closing double quote or an empty string
                 at the end of line or the end buffer.")
 
-(defun haskell-lexeme-looking-at-string-literal ()
+(defun purs-lexeme-looking-at-string-literal ()
   "Non-nil when point is at a string literal lookalike.
 
 Note that this function matches more than Haskell Report
@@ -353,62 +359,7 @@ After successful match:
     ;; there was a match
     t))
 
-(defun haskell-lexeme-looking-at-quasi-quote-literal ()
-  "Non-nil when point is just in front of Template Haskell
-quaisquote literal.
-
-Quasi quotes start with '[xxx|' or '[$xxx|' sequence and end with
-  '|]'. The 'xxx' is a quoter name. There is no escaping mechanism
-provided for the ending sequence.
-
-Regexp has subgroup expressions:
- (match-text 1) matches the quoter name (without $ sign if present).
- (match-text 2) matches the opening vertical bar.
- (match-text 3) matches the inside of the quoted string.
- (match-text 4) matches the closing vertical bar
-                or nil if at the end of the buffer.
-
-Note that this function excludes 'e', 't', 'd', 'p' as quoter
-names according to Template Haskell specification."
-  (let ((match-data-old (match-data)))
-    (if (and
-         (looking-at (rx-to-string `(: "[" (optional "$")
-                                       (regexp ,haskell-lexeme-modid-opt-prefix)
-                                       (group (regexp ,haskell-lexeme-id))
-                                       (group "|"))))
-         (equal (haskell-lexeme-classify-by-first-char (char-after (match-beginning 1)))
-                'varid)
-         (not (member (match-string 1) '("e" "t" "d" "p"))))
-      (save-excursion
-        ;; note that quasi quote syntax does not have any escaping
-        ;; mechanism and if not closed it will span til lthe end of buffer
-        (goto-char (match-end 0))
-        (let ((match-data (match-data))
-              (match-data-2 (and (re-search-forward "|]" nil t)
-                                 (match-data))))
-          (if match-data-2
-              (set-match-data
-               (list
-                (nth 0 match-data) (nth 1 match-data-2)          ;; whole match
-                (nth 2 match-data) (nth 3 match-data)            ;; quoter name
-                (nth 4 match-data) (nth 5 match-data)            ;; opening bar
-                (nth 5 match-data) (nth 0 match-data-2)          ;; inner string
-                (nth 0 match-data-2) (1+ (nth 0 match-data-2)))) ;; closing bar
-
-            (set-match-data
-             (list
-              (nth 0 match-data) (point-max)                   ;; whole match
-              (nth 2 match-data) (nth 3 match-data)            ;; quoter name
-              (nth 4 match-data) (nth 5 match-data)            ;; opening bar
-              (nth 5 match-data) (point-max)                   ;; inner string
-              nil nil))                                        ;; closing bar
-            ))
-        t)
-      ;; restore old match data if not matched
-      (set-match-data match-data-old)
-      nil)))
-
-(defun haskell-lexeme-classify-by-first-char (char)
+(defun purs-lexeme-classify-by-first-char (char)
   "Classify token by CHAR.
 
 CHAR is a chararacter that is assumed to be the first character
@@ -436,7 +387,7 @@ of a token."
      ((member char '(?\] ?\[ ?\( ?\) ?\{ ?\} ?\` ?\, ?\;))
       'special))))
 
-(defun haskell-lexeme-looking-at-token (&rest flags)
+(defun purs-lexeme-looking-at-token (&rest flags)
   "Like `looking-at' but understands Haskell lexemes.
 
 Moves point forward over whitespace.  Returns a symbol describing
@@ -452,16 +403,14 @@ Possible results are:
 - 'string: for strings literals
 - 'char: for char literals
 - 'number: for decimal, float, hexadecimal and octal number literals
-- 'template-haskell-quote: for a string of apostrophes for template haskell
-- 'template-haskell-quasi-quote: for a string of apostrophes for template haskell
 
 Note that for qualified symbols (match-string 1) returns the
 unqualified identifier or symbol.  Further qualification for
 symbol or identifier can be done with:
 
-   (haskell-lexeme-classify-by-first-char (char-after (match-beginning 1)))
+   (purs-lexeme-classify-by-first-char (char-after (match-beginning 1)))
 
-See `haskell-lexeme-classify-by-first-char' for details."
+See `purs-lexeme-classify-by-first-char' for details."
   (while
       ;; Due to how unterminated strings terminate at newline, some
       ;; newlines have syntax set to generic string delimeter. We want
@@ -487,28 +436,24 @@ See `haskell-lexeme-classify-by-first-char' for details."
             (forward-comment 1)
             (set-match-data (list point (point-marker)))
             'nested-comment))
-     (and (haskell-lexeme-looking-at-char-literal)
+     (and (purs-lexeme-looking-at-char-literal)
           'char)
-     (and (haskell-lexeme-looking-at-string-literal)
+     (and (purs-lexeme-looking-at-string-literal)
           'string)
      (and (looking-at "[][(){}`,;]")
-          (if (haskell-lexeme-looking-at-quasi-quote-literal)
-              'template-haskell-quasi-quote
-            'special))
-     (and (haskell-lexeme-looking-at-qidsym)
+          'special)
+     (and (purs-lexeme-looking-at-qidsym)
           (if (save-match-data
                 (string-match "\\`---*\\'" (match-string-no-properties 0)))
               (progn
                 (set-match-data (list point (set-marker (make-marker) (line-end-position))))
                 'comment)
             'qsymid))
-     (and (looking-at haskell-lexeme-number)
+     (and (looking-at purs-lexeme-number)
           'number)
-     (and (looking-at "'+")
-          'template-haskell-quote)
      (and (looking-at ".")
           'illegal))))
 
-(provide 'haskell-lexeme)
+(provide 'purs-lexeme)
 
-;;; haskell-lexeme.el ends here
+;;; purs-lexeme.el ends here

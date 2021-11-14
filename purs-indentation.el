@@ -38,7 +38,7 @@
 ;; version
 
 (require 'cl-lib)
-(require 'haskell-lexeme) ;; TODO: refactor or rename me
+(require 'purs-lexeme)
 
 ;;;###autoload
 (defgroup purs-indentation nil
@@ -1190,7 +1190,7 @@ line."
 
 (defun purs-indentation-skip-token ()
   "Skip to the next token."
-  (if (haskell-lexeme-looking-at-token) ;; TODO: refactor or rename me
+  (if (purs-lexeme-looking-at-token)
       (goto-char (match-end 0))
     ;; otherwise skip until space found
     (skip-syntax-forward "^-"))
