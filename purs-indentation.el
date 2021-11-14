@@ -524,6 +524,7 @@ and indent when all of the following are true:
     ("where"     . purs-indentation-toplevel-where)
     ("class"     . purs-indentation-class-declaration)
     ("instance"  . purs-indentation-class-declaration)
+    ("else"      . purs-indentation-else-instance)
     ("deriving"  . purs-indentation-deriving))
   "Alist of toplevel keywords with associated parsers.")
 
@@ -752,6 +753,12 @@ For example
      (when (string= current-token "where")
        (purs-indentation-with-starter
         #'purs-indentation-declaration-layout nil)))))
+
+(defun purs-indentation-else-instance ()
+  "Parse instance chain delcaration."
+  (purs-indentation-with-starter
+   (lambda ()
+     (purs-indentation-class-declaration)) nil))
 
 (defun purs-indentation-deriving ()
   "Parse standalone declaration."
