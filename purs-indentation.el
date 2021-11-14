@@ -118,12 +118,6 @@ set and deleted as if they were real tabs."
                'purs-indentation-mode
                "2015-05-25")
 
-(defvar purs-literate nil) ; defined in purs-mode.el
-
-(defun purs-indentation-bird-p ()
-  "Return t if this is a literate Haskell buffer in bird style, NIL otherwise."
-  (eq purs-literate 'bird))
-
 ;;----------------------------------------------------------------------------
 ;; UI starts here
 
@@ -142,7 +136,7 @@ set and deleted as if they were real tabs."
   "Indent all lines starting in the region sideways by ARG columns.
 Called from a program, takes three arguments, START, END and ARG.
 You can remove all indentation from a region by giving a large
-negative ARG.  Handles bird style literate Haskell too."
+negative ARG."
   (interactive "*r\np")
   (save-excursion
     (goto-char end)
@@ -164,43 +158,24 @@ negative ARG.  Handles bird style literate Haskell too."
   "Column position of first non-whitespace character in current line."
   (save-excursion
     (beginning-of-line)
-    (when (purs-indentation-bird-p)
-      (forward-char))
     (skip-syntax-forward "-")
     (current-column)))
-
-(defun purs-indentation-bird-outside-code-p ()
-  "Non-NIL if we are in bird literate mode, but outside of code."
-  (and (purs-indentation-bird-p)
-       (or (< (current-column) 2)
-           (save-excursion
-             (beginning-of-line)
-             (not (eq (char-after) ?>))))))
 
 (defun purs-indentation-newline-and-indent ()
   "Insert newline and indent."
   (interactive "*")
-  ;; On RET (or C-j), we:
-  ;;   - just jump to the next line if literate haskell, but outside code
-  (if (purs-indentation-bird-outside-code-p)
-      (progn
-        (delete-horizontal-space)
-        (newline))
-    ;;  - save the current column
-    (let ((ci (purs-indentation-current-indentation)))
-      ;; - jump to the next line and reindent to at the least same level
-      (delete-horizontal-space)
-      (newline)
-      ;; calculate indentation after newline is inserted because if we
-      ;; break an identifier we might create a keyword, for example
-      ;; "dowhere" => "do where"
-      (let ((indentations (or (purs-indentation-find-indentations)
-                              '(0))))
-        (when (purs-indentation-bird-p)
-          (insert "> "))
-        (purs-indentation-reindent-to
-         (purs-indentation-next-indentation (- ci 1) indentations 'nofail)
-         'move)))))
+  (let ((ci (purs-indentation-current-indentation)))
+    ;; - jump to the next line and reindent to at the least same level
+    (delete-horizontal-space)
+    (newline)
+    ;; calculate indentation after newline is inserted because if we
+    ;; break an identifier we might create a keyword, for example
+    ;; "dowhere" => "do where"
+    (let ((indentations (or (purs-indentation-find-indentations)
+                            '(0))))
+      (purs-indentation-reindent-to
+       (purs-indentation-next-indentation (- ci 1) indentations 'nofail)
+       'move))))
 
 (defun purs-indentation-next-indentation (col indentations &optional nofail)
   "Find the leftmost indentation which is greater than COL.
@@ -397,51 +372,31 @@ and indent when all of the following are true:
 (defun purs-indentation-goto-least-indentation ()
   "" ; FIXME
   (beginning-of-line)
-  (if (purs-indentation-bird-p)
-      (catch 'return
-        (while t
-          (when (not (eq (char-after) ?>))
-            (forward-line)
-            (forward-char 2)
-            (throw 'return nil))
-          (let ((ps (nth 8 (syntax-ppss))))
-            (when ps ;; inside comment or string
-              (goto-char ps)
-              (beginning-of-line)))
-          (when (and (>= 2 (purs-indentation-current-indentation))
-                     (not (looking-at ">\\s-*$")))
-            (forward-char 2)
-            (throw 'return nil))
-          (when (bobp)
-            (forward-char 2)
-            (throw 'return nil))
-          (forward-line -1)))
-    ;; not bird style
-    (catch 'return
-      (while (not (bobp))
-        (let ((point (point)))
-          ;; (forward-comment -1) gets lost if there are unterminated
-          ;; string constants and does not move point anywhere. We fix
-          ;; that case with (forward-line -1)
-          (forward-comment (- (buffer-size)))
-          (if (equal (point) point)
-              (forward-line -1)
-            (beginning-of-line)))
-        (let* ((ps (syntax-ppss))
-              (start-of-comment-or-string (nth 8 ps))
-              (start-of-list-expression (nth 1 ps)))
-          (cond
-           (start-of-comment-or-string
-            ;; inside comment or string
-            (goto-char start-of-comment-or-string))
-           (start-of-list-expression
-            ;; inside a parenthesized expression
-            (goto-char start-of-list-expression))
-           ((= 0 (purs-indentation-current-indentation))
-             (throw 'return nil))))))
-    (beginning-of-line)
-    (when (bobp)
-      (forward-comment (buffer-size)))))
+  (catch 'return
+    (while (not (bobp))
+      (let ((point (point)))
+        ;; (forward-comment -1) gets lost if there are unterminated
+        ;; string constants and does not move point anywhere. We fix
+        ;; that case with (forward-line -1)
+        (forward-comment (- (buffer-size)))
+        (if (equal (point) point)
+            (forward-line -1)
+          (beginning-of-line)))
+      (let* ((ps (syntax-ppss))
+             (start-of-comment-or-string (nth 8 ps))
+             (start-of-list-expression (nth 1 ps)))
+        (cond
+         (start-of-comment-or-string
+          ;; inside comment or string
+          (goto-char start-of-comment-or-string))
+         (start-of-list-expression
+          ;; inside a parenthesized expression
+          (goto-char start-of-list-expression))
+         ((= 0 (purs-indentation-current-indentation))
+          (throw 'return nil))))))
+  (beginning-of-line)
+  (when (bobp)
+    (forward-comment (buffer-size))))
 
 (defun purs-indentation-parse-to-indentations ()
   "" ; FIXME
@@ -468,7 +423,7 @@ and indent when all of the following are true:
 
 (defun purs-indentation-first-indentation ()
   "Return column of first indentation."
-  (list (if (purs-indentation-bird-p) 2 0)))
+  (list 0))
 
 (defun purs-indentation-find-indentations ()
   "Return list of indentation positions corresponding to actual cursor position."
@@ -927,9 +882,7 @@ parser.  If parsing ends here, set indentation to left-indent."
 
 (defun purs-indentation-layout (parser)
   "Parse layout list, where each layout item is parsed by parser."
-  (if (string= current-token "{")
-      (purs-indentation-list parser "}" ";") ; explicit layout
-    (purs-indentation-implicit-layout-list parser)))
+  (purs-indentation-implicit-layout-list parser))
 
 (defun purs-indentation-expression-token-p (token)
   "Return non-NIL value if TOKEN is an expression token."
@@ -1243,12 +1196,7 @@ line."
     (skip-syntax-forward "^-"))
   ;; we have to skip unterminated string fence at the end of line
   (skip-chars-forward "\n")
-  (forward-comment (buffer-size))
-  (while (and (purs-indentation-bird-p)
-              (bolp)
-              (eq (char-after) ?>))
-    (forward-char)
-    (forward-comment (buffer-size))))
+  (forward-comment (buffer-size)))
 
 (provide 'purs-indentation)
 
