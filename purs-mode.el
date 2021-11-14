@@ -24,7 +24,7 @@
 ;;; Code:
 
 (require 'purs-font-lock)
-(require 'purs-indent)
+(require 'purs-indentation)
 
 (defconst purs-syntax-table
  (let ((table (make-syntax-table)))
