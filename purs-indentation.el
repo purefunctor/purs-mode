@@ -519,7 +519,7 @@ and indent when all of the following are true:
                        'purs-indentation-expression-layout))
     ("case"    .
      ,(apply-partially 'purs-indentation-phrase
-                       '(purs-indentation-expression
+                       '(purs-indentation-comma-separated
                          "of" purs-indentation-case-layout)))
     ("\\"      .
      ,(apply-partially 'purs-indentation-with-starter
@@ -715,6 +715,10 @@ For example
    (lambda ()
      (purs-indentation-class-declaration)) nil))
 
+(defun purs-indentation-comma-separated ()
+  "Parse comma-separated expressions."
+  (purs-indentation-separated #'purs-indentation-expression "," nil))
+
 (defun purs-indentation-deriving ()
   "Parse standalone declaration."
   (purs-indentation-with-starter
@@ -834,7 +838,7 @@ Skip the keyword or parenthesis." ; FIXME: better description needed
 
 (defun purs-indentation-case ()
   "" ; FIXME
-  (purs-indentation-expression)
+  (purs-indentation-comma-separated)
   (cond ((eq current-token 'end-tokens)
          (purs-indentation-add-indentation current-indent))
         ((string= current-token "|")
