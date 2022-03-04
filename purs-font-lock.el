@@ -28,7 +28,7 @@
   (concat (regexp-opt
            '("if" "then" "else" "do"
              "ado" "in" "module" "as"
-             "import" "foreign" "data"
+             "import" "hiding" "foreign" "data"
              "kind" "type" "infix"
              "infixr" "infixl" "where"
              "class" "instance" "forall"
