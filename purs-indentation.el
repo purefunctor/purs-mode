@@ -891,7 +891,7 @@ parser.  If parsing ends here, set indentation to left-indent."
 (defun purs-indentation-expression-token-p (token)
   "Return non-NIL value if TOKEN is an expression token."
   (member token
-          '("if" "let" "do" "case" "\\" "(" "{" "[" "::"
+          '("if" "let" "in" "do" "case" "\\" "(" "{" "[" "::"
             value operator no-following-token)))
 
 (defun purs-indentation-expression (&optional accepted-tokens)
