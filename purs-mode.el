@@ -24,7 +24,6 @@
 ;;; Code:
 
 (require 'purs-font-lock)
-(require 'purs-indentation)
 
 (defconst purs-syntax-table
  (let ((table (make-syntax-table)))
@@ -51,9 +50,8 @@
               font-lock-defaults '(purs-font-lock-keywords))
   :after-hook purs-mode-hook)
 
-(progn
-  (add-to-list 'auto-mode-alist '("\\.purs\\'" . purs-mode))
-  (modify-coding-system-alist 'file "\\.purs\\'" 'utf-8))
+(add-to-list 'auto-mode-alist '("\\.purs\\'" . purs-mode))
+(modify-coding-system-alist 'file "\\.purs\\'" 'utf-8)
 
 (provide 'purs-mode)
 
