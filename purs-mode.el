@@ -25,7 +25,7 @@
 
 (require 'purs-font-lock)
 
-(defconst purs-syntax-table
+(defconst purescript-syntax-table
  (let ((table (make-syntax-table)))
    (modify-syntax-entry ?_  "w" table)
    (modify-syntax-entry ?\?  "w" table)
@@ -39,18 +39,18 @@
    table))
 
 ;;;###autoload
-(define-derived-mode purs-mode prog-mode "PureScript"
+(define-derived-mode purescript-mode prog-mode "PureScript"
   "Major mode for editing PureScript programs."
   :group 'purescript
-  :syntax-table purs-syntax-table
+  :syntax-table purescript-syntax-table
   (setq-local indent-tabs-mode nil
               case-fold-search nil
               comment-start "--"
               comment-end ""
               font-lock-defaults '(purs-font-lock-keywords))
-  :after-hook purs-mode-hook)
+  :after-hook purescript-mode-hook)
 
-(add-to-list 'auto-mode-alist '("\\.purs\\'" . purs-mode))
+(add-to-list 'auto-mode-alist '("\\.purs\\'" . purescript-mode))
 (modify-coding-system-alist 'file "\\.purs\\'" 'utf-8)
 
 (provide 'purs-mode)
