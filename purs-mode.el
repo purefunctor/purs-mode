@@ -50,6 +50,7 @@
               font-lock-defaults '(purs-font-lock-keywords))
   :after-hook purescript-mode-hook)
 
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.purs\\'" . purescript-mode))
 (modify-coding-system-alist 'file "\\.purs\\'" 'utf-8)
 
